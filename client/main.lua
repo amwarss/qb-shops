@@ -82,31 +82,37 @@ Citizen.CreateThread(function()
                     local playerData = QBCore.Functions.GetPlayerData()
                     local playerJob = playerData.job and playerData.job.name or nil
                     local vehicleModel = GetEntityModel(entity)
-                    local vehicleName = GetDisplayNameFromVehicleModel(vehicleModel):lower()
-
-                    if playerJob == "police" then
-                        for _, allowedVehicle in ipairs(Config.PoliceVehicles) do
-                            if vehicleName == allowedVehicle:lower() then
-                                openPoliceShop()
-                                return
-                            end
+                    print("Vehicle Model Hash:", vehicleModel, "Vehicle Name (Meta):", GetDisplayNameFromVehicleModel(vehicleModel):lower())
+                    local isPoliceVehicle = false
+                    for _, allowedVehicle in ipairs(Config.PoliceVehicles) do
+                        if vehicleModel == GetHashKey(allowedVehicle) then
+                            isPoliceVehicle = true
+                            break
                         end
-                        QBCore.Functions.Notify("This vehicle is not a valid police vehicle!", "error")
+                    end
+                    if playerJob == "police" and isPoliceVehicle then
+                        openPoliceShop()
                     else
-                        QBCore.Functions.Notify("You are not a police officer!", "error")
+                        if playerJob ~= "police" then
+                            QBCore.Functions.Notify("You are not a police officer!", "error")
+                        elseif not isPoliceVehicle then
+                            QBCore.Functions.Notify("This vehicle is not a valid police vehicle!", "error")
+                        end
                     end
                 end,
             }
         },
         distance = 2.0,
         canInteract = function(entity, distance)
+            local playerData = QBCore.Functions.GetPlayerData()
+            local playerJob = playerData.job and playerData.job.name or nil
             local vehicleModel = GetEntityModel(entity)
-            local vehicleName = GetDisplayNameFromVehicleModel(vehicleModel):lower()
             for _, allowedVehicle in ipairs(Config.PoliceVehicles) do
-                if vehicleName == allowedVehicle:lower() then
-                    return true
+                if vehicleModel == GetHashKey(allowedVehicle) then
+                    return playerJob == "police"
                 end
             end
+            QBCore.Functions.Notify("This vehicle is not a valid police vehicle!", "error")
             return false
         end
     })
