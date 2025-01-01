@@ -57,7 +57,7 @@ local function openShop(shop, data)
 end
 
 local function openPoliceShop()
-    local shop = "police" -- اسم المتجر في Config.Products
+    local shop = "police"
     SendNUIMessage({
         action = "OPEN",
         data = {
@@ -84,8 +84,6 @@ Citizen.CreateThread(function()
                     local playerJob = playerData.job and playerData.job.name or nil
                     local vehicleModel = GetEntityModel(entity)
                     local vehicleName = GetDisplayNameFromVehicleModel(vehicleModel):lower()
-
-                    -- التحقق من المركبة
                     local isPoliceVehicle = false
                     for _, allowedVehicle in ipairs(Config.PoliceVehicles) do
                         if vehicleName == allowedVehicle:lower() then
@@ -93,8 +91,6 @@ Citizen.CreateThread(function()
                             break
                         end
                     end
-
-                    -- التحقق من الوظيفة والمركبة
                     if playerJob == "police" and isPoliceVehicle then
                         openPoliceShop()
                     else
@@ -108,28 +104,20 @@ Citizen.CreateThread(function()
         canInteract = function(entity, distance)
             local playerData = QBCore.Functions.GetPlayerData()
             local playerJob = playerData.job and playerData.job.name or nil
-
-            -- تحقق من الوظيفة
             if playerJob ~= "police" then
                 return false
             end
-
-            -- تحقق من نوع المركبة
             local vehicleModel = GetEntityModel(entity)
             local vehicleName = GetDisplayNameFromVehicleModel(vehicleModel):lower()
-
             for _, allowedVehicle in ipairs(Config.PoliceVehicles) do
                 if vehicleName == allowedVehicle:lower() then
                     return true
                 end
             end
-
             return false
         end
     })
 end)
-
-
 
 exports("OpenShop", function(data)
     SendNUIMessage({
